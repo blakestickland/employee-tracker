@@ -216,8 +216,9 @@ const viewAllDepartments = () => {
 
 const addEmployee = async () => {
     let managerList = await getManagers();
+    managerList.push({first_name: 'None'});
     let roleList = await getRoles();
-    console.log(roleList[0].id +  ' || ' + roleList[0].title);
+    console.log(managerList);
     inquirer
     .prompt([
     {
