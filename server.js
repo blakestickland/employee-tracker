@@ -45,6 +45,8 @@ const whatProcess = () => {
                 "View All Departments",
                 // 'View Combined Salaries by Department',
                 "Add Employee",
+                // "Add Role",
+                // "Add Department",
                 // "Remove Employee",
                 // "Update Employee Role",
                 // "Update Employee Manager",
@@ -86,7 +88,7 @@ const whatProcess = () => {
 
             case 'Add Employee':
                 console.log("clicked on Add Employee");
-                addEmployee();
+                addEmployee();  
                 break;
             
             case 'Add Role':
@@ -245,7 +247,6 @@ const addEmployee = async () => {
         }),
     }
     ]).then((answer) => {
-        // console.log(answer.first_name, answer.last_name, answer.role, answer.manager);
 
         let roleId;
 
@@ -282,21 +283,42 @@ const addEmployee = async () => {
                 whatProcess();
             }
         );
-        // const query = `SELECT department.id, department.department_name, role.title, CONCAT(employee.first_name, ' ', employee.last_name) employee_name FROM department LEFT JOIN role ON role.department_id = department.id LEFT JOIN employee ON employee.role_id = role.id`;
-    
-        // connection.query(query, (err, res) => {
-        //     if (err) throw err;
-        //     whatProcess();
     });
 };
 
 const addRole = () => {
+    inquirer
+    .prompt([
+    {
+        name: 'new_role_title',
+        type: 'input',
+        message: "What is the title of the new role?",
+    },
+    {
+        name: 'new_role_salary',
+        type: 'input',
+        message: "What is the salary of the new role?",
+    },
+    {
+        name: 'new_role_department',
+        type: 'list',
+        message: "What is the new role's department?",
+        choices: departmentList.map((dept) => {
+            return department.department_name;
+        }),
+    },
+    ]).then((answer) => {
+        
+    });
+};
 
-}
+
 
 const addDepartment = () => {
 
 }
+
+// HELPER FUNCTIONS
 const getManagers = () => {
     const query = `SELECT b.id, b.first_name, b.last_name, b.manager_id, role.title FROM employee b LEFT JOIN role ON role.id = b.role_id WHERE b.manager_id is null;`;
     return new Promise ((resolve,reject) => {
