@@ -45,7 +45,7 @@ const whatProcess = () => {
                 "View All Departments",
                 // 'View Combined Salaries by Department',
                 "Add Employee",
-                // "Add Role",
+                "Add Role",
                 "Add Department",
                 // "Remove Employee",
                 // "Update Employee Role",
@@ -287,7 +287,9 @@ const addEmployee = async () => {
     });
 };
 
-const addRole = () => {
+const addRole = async () => {
+    let departmentList = await getDepartments();
+
     inquirer
     .prompt([
     {
@@ -304,12 +306,35 @@ const addRole = () => {
         name: 'new_role_department',
         type: 'list',
         message: "What is the new role's department?",
-        choices: departmentList.map((dept) => {
+        choices: departmentList.map((department) => {
             return department.department_name;
         }),
     },
     ]).then((answer) => {
-        
+        let departmentId;
+
+        for (let i = 0; i < departmentList.length; i++) {
+            if (departmentList[i].department_name === answer.new_role_department) {
+                departmentId = departmentList[i].id;
+            };
+        };
+
+        selectedDepartment = departmentList.find((department) => department.department_name === answer.new_role_department);
+    
+        const query = connection.query(
+            `INSERT INTO role SET ?`,
+            {
+                title: answer.new_role_title,
+                salary: answer.new_role_salary,
+                department_id: selectedDepartment.id,
+            },
+            (err, res) => {
+                if (err) throw err;
+                console.log(`Added ${answer.new_role_title} to the role table in the database.`)
+                whatProcess();
+            }
+        );
+
     });
 };
 
@@ -359,7 +384,7 @@ const getRoles = () => {
     });
 };
 
-const getDepartment = () => {
+const getDepartments = () => {
     const query = `SELECT department.id, department.department_name FROM department;`;
     return new Promise ((resolve, reject) => {
         connection.query(query, (err, res) => {
