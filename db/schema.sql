@@ -23,3 +23,16 @@ CREATE TABLE employee (
     role_id INTEGER,
     manager_id INTEGER
 )
+
+ALTER TABLE role
+ADD CONSTRAINT fk_department FOREIGN KEY(department_id)
+   REFERENCES department(id);
+
+ALTER TABLE employee
+ADD CONSTRAINT fk_role FOREIGN KEY(role_id)
+   REFERENCES role(id);
+
+ALTER TABLE employee
+ADD CONSTRAINT fk_manager FOREIGN KEY(manager_id)
+   REFERENCES employee(id);
+

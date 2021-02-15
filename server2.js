@@ -39,38 +39,90 @@ const whatProcess = () => {
             message: "What would you like to do with the Employee database",
             choices: [
                 'View All Employees',
-                // 'View All Employees By Department',
+                'View All Employees By Department',
                 // 'View All Employees By Manager',
-                // "View All Roles",
-                // "View All Departments",
+                "View All Roles",
+                "View All Departments",
+                // 'View Combined Salaries by Department',
                 // "Add Employee",
                 // "Remove Employee",
-                "Update Employee Role",
+                // "Update Employee Role",
                 // "Update Employee Manager",
                 'Exit'
             ],
         })
         .then((answer) => {
-            console.log(answer);
         switch (answer.choices) {
             case 'View All Employees': 
                 console.log("clicked on View all Employees");
                 viewAllEmployees();
                 break;
-            case 'Update Employee Role': 
-                console.log("clicked on Update Employee Role");
-                updateEmployeeRole();
-                break;
-
+                
             case 'View All Employees By Department':
                 console.log("clicked on View All Employees By Department");
                 viewAllEmployeesByDept();
                 break;
+                
+            case 'View All Employees By Manager':
+                console.log("clicked on View All Employees By Manager");
+                viewAllEmployeesByManager();
+                break;
+                
+            case 'View All Roles':
+                console.log("clicked on View All Roles");
+                viewAllRoles();
+                break;
+                
+            case 'View All Departments':
+                console.log("clicked on View All Departments");
+                viewAllDepartments();
+                break;
+                
+            case 'View Combined Salaries by Department':
+                console.log("clicked on View Combined Salaries by Department");
+                viewCombinedSalaries();
+                break;
 
-            // case 'View All Employees By Manager':
-            //     console.log("clicked on View All Employees By Manager");
-            //     // this.viewAllEmployeesByManager();
-            //     break;
+
+            case 'Add Employee':
+                console.log("clicked on Add Employee");
+                addEmployee();
+                break;
+            
+            case 'Add Role':
+                console.log("clicked on Add Role");
+                addRole();
+                break;
+            
+            case 'Add Department':
+                console.log("clicked on Add Department");
+                addDepartment();
+                break;
+            
+            case 'Remove Employee':
+                console.log("clicked on Remove Employee");
+                removeEmployee();
+                break;
+            
+            case 'Remove Role':
+                console.log("clicked on Remove Role");
+                removeRole();
+                break;
+            
+            case 'Remove Department':
+                console.log("clicked on Remove Department");
+                removeDepartment();
+                break;
+            
+            case 'Update Employee Role': 
+                console.log("clicked on Update Employee Role");
+                updateEmployeeRole();
+                break;
+            
+            case 'Update Employee Manager': 
+                console.log("clicked on Update Employee Manager");
+                updateEmployeeManager();
+                break;
             
             case 'Exit':
                 connection.end();
@@ -109,10 +161,37 @@ const viewAllEmployees = () => {
         whatProcess();
     });
 };
-
 const viewAllEmployeesByDept = () => {
-    const query = ``;
-    
+    inquirer
+        .prompt({
+            name: 'employees_by_department',
+            type: 'list',
+            message: "Which department's employees would you like to view?",
+            choices: [
+                'Sales',
+                'Engineering',
+                'Finance',
+                'Legal',
+                'Exit'
+            ],
+        })
+        .then((answer) => {
+            let deptChoice = answer.employees_by_department;
+            console.log(deptChoice);
+            const query = `SELECT b.id, b.first_name, b.last_name, role.title, department.department_name ,role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee b LEFT JOIN employee m ON m.id = b.manager_id LEFT JOIN role ON role.id = b.role_id LEFT JOIN department ON department.id = role.department_id WHERE (department.department_name = ?)`;
+
+            connection.query(query,[deptChoice] ,(err, res) => {
+                if (err) throw err;
+                // Log all results of the SELECT statement
+                renderTable(res);
+                whatProcess();
+            });
+        })
+};
+
+const viewAllRoles = () => {
+    const query = `SELECT role.id, role.title, role.salary, department.department_name, CONCAT(employee.first_name, ' ', employee.last_name) employee_name FROM role LEFT JOIN department ON department.id = role.department_id LEFT JOIN employee ON employee.role_id = role.id`;
+
     connection.query(query, (err, res) => {
         if (err) throw err;
         // Log all results of the SELECT statement
@@ -120,173 +199,53 @@ const viewAllEmployeesByDept = () => {
         whatProcess();
     });
 };
+const viewAllDepartments = () => {
+    const query = `SELECT department.id, department.department_name, role.title, CONCAT(employee.first_name, ' ', employee.last_name) employee_name FROM department LEFT JOIN role ON role.department_id = department.id LEFT JOIN employee ON employee.role_id = role.id`;
 
-
-// const runInquiry = () => {
-//   inquirer
-//     .prompt({
-//       name: 'action',
-//       type: 'rawlist',
-//       message: 'What would you like to do?',
-//       choices: [
-//         'Find songs by artist',
-//         'Find all artists who appear more than once',
-//         'Find data within a specific range',
-//         'Search for a specific song',
-//         'Find artists with a top song and top album in the same year',
-//       ],
-//     })
-//     .then((answer) => {
-//       switch (answer.action) {
-//         case 'Find songs by artist':
-//           artistSearch();
-//           break;
-
-//         case 'Find all artists who appear more than once':
-//           multiSearch();
-//           break;
-
-//         case 'Find data within a specific range':
-//           rangeSearch();
-//           break;
-
-//         case 'Search for a specific song':
-//           songSearch();
-//           break;
-
-//         case 'Find artists with a top song and top album in the same year':
-//           songAndAlbumSearch();
-//           break;
-
-//         default:
-//           console.log(`Invalid action: ${answer.action}`);
-//           break;
-//       }
-//     });
-// };
-
-// const artistSearch = () => {
-//   inquirer
-//     .prompt({
-//       name: 'artist',
-//       type: 'input',
-//       message: 'What artist would you like to search for?',
-//     })
-//     .then((answer) => {
-//       const query = 'SELECT position, song, year FROM top5000 WHERE ?';
-//       connection.query(query, { artist: answer.artist }, (err, res) => {
-//         res.forEach(({ position, song, year }) => {
-//           console.log(
-//             `Position: ${position} || Song: ${song} || Year: ${year}`
-//           );
-//         });
-//         runSearch();
-//       });
-//     });
-// };
-
-// const multiSearch = () => {
-//   const query =
-//     'SELECT artist FROM top5000 GROUP BY artist HAVING count(*) > 1';
-//   connection.query(query, (err, res) => {
-//     res.forEach(({ artist }) => console.log(artist));
-//     runSearch();
-//   });
-// };
-
-// const rangeSearch = () => {
-//   inquirer
-//     .prompt([
-//       {
-//         name: 'start',
-//         type: 'input',
-//         message: 'Enter starting position: ',
-//         validate(value) {
-//           if (isNaN(value) === false) {
-//             return true;
-//           }
-//           return false;
-//         },
-//       },
-//       {
-//         name: 'end',
-//         type: 'input',
-//         message: 'Enter ending position: ',
-//         validate(value) {
-//           if (isNaN(value) === false) {
-//             return true;
-//           }
-//           return false;
-//         },
-//       },
-//     ])
-//     .then((answer) => {
-//       const query =
-//         'SELECT position,song,artist,year FROM top5000 WHERE position BETWEEN ? AND ?';
-//       connection.query(query, [answer.start, answer.end], (err, res) => {
-//         res.forEach(({ position, song, artist, year }) => {
-//           console.log(
-//             `Position: ${position} || Song: ${song} || Artist: ${artist} || Year: ${year}`
-//           );
-//         });
-//         runSearch();
-//       });
-//     });
-// };
-
-// const songSearch = () => {
-//   inquirer
-//     .prompt({
-//       name: 'song',
-//       type: 'input',
-//       message: 'What song would you like to look for?',
-//     })
-//     .then((answer) => {
-//       console.log(answer.song);
-//       connection.query(
-//         'SELECT * FROM top5000 WHERE ?',
-//         { song: answer.song },
-//         (err, res) => {
-//           if (res[0]) {
-//             console.log(
-//               `Position: ${res[0].position} || Song: ${res[0].song} || Artist: ${res[0].artist} || Year: ${res[0].year}`
-//             );
-//           } else {
-//             console.error(`No results for ${answer.song}`);
-//           }
-//           runSearch();
-//         }
-//       );
-//     });
-// };
-
-// const songAndAlbumSearch = () => {
-//   inquirer
-//     .prompt({
-//       name: 'artist',
-//       type: 'input',
-//       message: 'What artist would you like to search for?',
-//     })
-//     .then((answer) => {
-//       let query =
-//         'SELECT top_albums.year, top_albums.album, top_albums.position, top5000.song, top5000.artist ';
-//       query +=
-//         'FROM top_albums INNER JOIN top5000 ON (top_albums.artist = top5000.artist AND top_albums.year ';
-//       query +=
-//         '= top5000.year) WHERE (top_albums.artist = ? AND top5000.artist = ?) ORDER BY top_albums.year, top_albums.position';
-
-//       connection.query(query, [answer.artist, answer.artist], (err, res) => {
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        // Log all results of the SELECT statement
+        renderTable(res);
+        whatProcess();
+    });
+};
+// const getManagers = () => {
+//     connection.query(`SELECT b.id, b.first_name, b.last-name, role.title FROM employee b 
+//     WHERE (manager_id = 'NULL')`, (err, res) => {
 //         console.log(`${res.length} matches found!`);
-//         res.forEach(({ year, position, artist, song, album }, i) => {
-//           const num = i + 1;
-//           console.log(
-//             `${num} Year: ${year} Position: ${position} || Artist: ${artist} || Song: ${song} || Album: ${album}`
-//           );
+//         res.forEach(({ id, first_name, last_name, title }, i) => {
+//             const num = i =1;
+//             console.log(
+//                 `${num} || id:${id} || ${first_name} ${last_name} || ${title}`
+//             );
 //         });
+//     })
+// }
 
-//         runSearch();
-//       });
-//     });
+// const viewAllEmployeesByManager = () => {
+//     // getManagers();
+//     inquirer
+//         .prompt({
+//             name: 'employees_by_manager',
+//             type: 'list',
+//             message: "Which manager's employees would you like to view?",
+//             choices: [
+//                 'Ashley Rodriguez',
+//                 'John Doe',
+//                 'Sarah Lourd',
+//                 'Exit'
+//             ],
+//         })
+//         .then((answer) => {
+//             let managerChoice = answer.employees_by_manager;
+//             console.log(managerChoice);
+//             const query = `SELECT b.id, b.first_name, b.last_name, role.title, department.department_name ,role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee b LEFT JOIN employee m ON m.id = b.manager_id LEFT JOIN role ON role.id = b.role_id LEFT JOIN department ON department.id = role.department_id WHERE (CONCAT(b.first_name, ' ', b.last_name) = ?)`;
+
+//             connection.query(query,[managerChoice] ,(err, res) => {
+//                 if (err) throw err;
+//                 // Log all results of the SELECT statement
+//                 renderTable(res);
+//                 whatProcess();
+//             });
+//         })
 // };
-
-// SELECT employee.manager_id
