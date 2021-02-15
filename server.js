@@ -46,7 +46,7 @@ const whatProcess = () => {
                 // 'View Combined Salaries by Department',
                 "Add Employee",
                 // "Add Role",
-                // "Add Department",
+                "Add Department",
                 // "Remove Employee",
                 // "Update Employee Role",
                 // "Update Employee Manager",
@@ -316,8 +316,27 @@ const addRole = () => {
 
 
 const addDepartment = () => {
-
-}
+    inquirer
+    .prompt([
+        {
+            name: 'new_department_name',
+            type: 'input',
+            message: "What is the name of the new department?",
+        },
+    ]).then((answer) => {
+        const query = connection.query(
+            `INSERT INTO department SET ?`,
+            {
+                department_name: answer.new_department_name,
+            },
+            (err, res) => {
+                if (err) throw err;
+                console.log(`Added ${answer.new_department_name} to the department table`)
+                whatProcess();
+            }
+        );
+    });
+};
 
 // HELPER FUNCTIONS
 const getManagers = () => {
@@ -332,6 +351,16 @@ const getManagers = () => {
 
 const getRoles = () => {
     const query = `SELECT role.id, role.title, role.salary, role.department_id FROM role;`;
+    return new Promise ((resolve, reject) => {
+        connection.query(query, (err, res) => {
+            if (err) throw (err);
+            resolve(res);
+        });
+    });
+};
+
+const getDepartment = () => {
+    const query = `SELECT department.id, department.department_name FROM department;`;
     return new Promise ((resolve, reject) => {
         connection.query(query, (err, res) => {
             if (err) throw (err);
