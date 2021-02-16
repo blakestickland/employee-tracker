@@ -47,7 +47,7 @@ const whatProcess = () => {
                 "Add Employee",
                 "Add Role",
                 "Add Department",
-                // "Remove Employee",
+                "Remove Employee",
                 "Update Employee Role",
                 // "Update Employee Manager",
                 'Exit'
@@ -136,6 +136,8 @@ const whatProcess = () => {
     });  
 };
 
+// ----------------- UPDATE DATABASE ----------------------
+
 const updateEmployeeRole = async () => {
     // ask which employee?
     // ask what to update to?
@@ -198,7 +200,7 @@ const updateEmployeeRole = async () => {
             ],
             (err, res) => {
             if (err) throw err;
-            // Log all results of the SELECT statement
+            // Inform user that the employee's role has been updated
             console.log(`Updated ${answer.chosen_employee}'s role to be ${answer.updated_role} in the employee table in the database`)
             whatProcess();
             }
@@ -459,6 +461,50 @@ const addDepartment = () => {
         );
     });
 };
+
+// --------------------------- REMOVE ---------------------------------
+const removeEmployee = async () => {
+    let employeeList = await getEmployees();
+    inquirer
+    .prompt([
+        {
+            name: 'chosen_employee',
+            type: 'list',
+            message: "Which employee would you like to remove?",
+            choices: employeeList.map((employee) => {
+                return employee.employee_name;
+            })
+        },
+    ])
+    .then ((answer) => {
+
+        let employeeId;
+
+        for (let i = 0; i < employeeList.length; i++) {
+            if (employeeList[i].employee_name === answer.chosen_employee) {
+                employeeId = employeeList[i].id;
+            };
+        };
+        
+        selectedEmployee = employeeList.find((employee) => employee.employee_name === answer.chosen_employee);
+        
+        const query = connection.query(
+            `DELETE FROM employee WHERE ?`,
+            [
+                {
+                    id: employeeId,
+                },
+            ],
+            (err, res) => {
+            if (err) throw err;
+            // Inform user that the employee's role has been updated
+            console.log(`Removed ${answer.chosen_employee}from the employee table in the database`)
+            whatProcess();
+            }
+        );
+    });
+};
+
 
 // HELPER FUNCTIONS
 const getEmployees = () => {
