@@ -40,7 +40,7 @@ const whatProcess = () => {
             choices: [
                 'View All Employees',
                 'View All Employees By Department',
-                // 'View All Employees By Manager',
+                'View All Employees By Manager',
                 "View All Roles",
                 "View All Departments",
                 // 'View Combined Salaries by Department',
@@ -48,7 +48,7 @@ const whatProcess = () => {
                 "Add Role",
                 "Add Department",
                 // "Remove Employee",
-                // "Update Employee Role",
+                "Update Employee Role",
                 // "Update Employee Manager",
                 'Exit'
             ],
@@ -60,16 +60,6 @@ const whatProcess = () => {
                 viewAllEmployees();
                 break;
                 
-            case 'View All Employees By Department':
-                console.log("clicked on View All Employees By Department");
-                viewAllEmployeesByDept();
-                break;
-                
-            case 'View All Employees By Manager':
-                console.log("clicked on View All Employees By Manager");
-                viewAllEmployeesByManager();
-                break;
-                
             case 'View All Roles':
                 console.log("clicked on View All Roles");
                 viewAllRoles();
@@ -79,12 +69,21 @@ const whatProcess = () => {
                 console.log("clicked on View All Departments");
                 viewAllDepartments();
                 break;
+
+            case 'View All Employees By Manager':
+                console.log("clicked on View All Employees By Manager");
+                viewAllEmployeesByManager();
+                break;
+    
+            case 'View All Employees By Department':
+                console.log("clicked on View All Employees By Department");
+                viewAllEmployeesByDept();
+                break;
                 
             case 'View Combined Salaries by Department':
                 console.log("clicked on View Combined Salaries by Department");
                 viewCombinedSalaries();
                 break;
-
 
             case 'Add Employee':
                 console.log("clicked on Add Employee");
@@ -137,21 +136,78 @@ const whatProcess = () => {
     });  
 };
 
-// const updateEmployeeRole = () => {
-//     // ask which employee?
-//     // ask what to update to?
-//     // pass the parameters into update employee role
-//     // replace the ? with the parameters passed in
-//     // KEEP IN MIND THE JOINS
+const updateEmployeeRole = async () => {
+    // ask which employee?
+    // ask what to update to?
+    // pass the parameters into update employee role
+    // replace the ? with the parameters passed in
+    // KEEP IN MIND THE JOINS
+    let employeeList = await getEmployees();
+    let roleList = await getRoles();
+    inquirer
+    .prompt([
+        {
+            name: 'chosen_employee',
+            type: 'list',
+            message: "Which employee's role would you like to update?",
+            choices: employeeList.map((employee) => {
+                return employee.employee_name;
+            })
+        },
+        {
+            name: 'updated_role',
+            type: 'list',
+            message: "What is the employee's new role?",
+            choices: roleList.map((role) => {
+                return role.title;
+            }),
+        },
+    ])
+    .then ((answer) => {
 
-//     const query = `UPDATE employees SET ? WHERE employee.role_id `;
-//     connection.query(query, [answer.artist, answer.artist], (err, res) => {
-//         if (err) throw err;
-//         // Log all results of the SELECT statement
-//         console.log(res);
+        let employeeId;
 
-// })
-// }
+        for (let i = 0; i < employeeList.length; i++) {
+            if (employeeList[i].employee_name === answer.chosen_employee) {
+                employeeId = employeeList[i].id;
+            };
+        };
+        
+        selectedEmployee = employeeList.find((employee) => employee.employee_name === answer.chosen_employee);
+        
+        let roleId;
+
+        for (let i = 0; i < roleList.length; i++) {
+            if (roleList[i].title === answer.updated_role) {
+                roleId = roleList[i].id;
+            };
+        };
+
+        selectedRole = roleList.find((role) => role.title === answer.updated_role);
+
+
+        const query = connection.query(
+            `UPDATE employee SET ? WHERE ?`,
+            [
+                {
+                    role_id: roleId,
+                },
+                {
+                    id: employeeId,
+                }
+            ],
+            (err, res) => {
+            if (err) throw err;
+            // Log all results of the SELECT statement
+            console.log(`Updated ${answer.chosen_employee}'s role to be ${answer.updated_role} in the employee table in the database`)
+            whatProcess();
+            }
+        );
+    });
+};
+
+
+// -------------------- VIEW DATABASE --------------------
 
 const viewAllEmployees = () => {
     const query = `SELECT b.id, b.first_name, b.last_name, role.title, department.department_name ,role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee b LEFT JOIN employee m ON m.id = b.manager_id LEFT JOIN role ON role.id = b.role_id LEFT JOIN department ON department.id = role.department_id`;
@@ -162,33 +218,6 @@ const viewAllEmployees = () => {
         renderTable(res);
         whatProcess();
     });
-};
-const viewAllEmployeesByDept = () => {
-    inquirer
-        .prompt({
-            name: 'employees_by_department',
-            type: 'list',
-            message: "Which department's employees would you like to view?",
-            choices: [
-                'Sales',
-                'Engineering',
-                'Finance',
-                'Legal',
-                'Exit'
-            ],
-        })
-        .then((answer) => {
-            let deptChoice = answer.employees_by_department;
-            console.log(deptChoice);
-            const query = `SELECT b.id, b.first_name, b.last_name, role.title, department.department_name ,role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee b LEFT JOIN employee m ON m.id = b.manager_id LEFT JOIN role ON role.id = b.role_id LEFT JOIN department ON department.id = role.department_id WHERE (department.department_name = ?)`;
-
-            connection.query(query,[deptChoice] ,(err, res) => {
-                if (err) throw err;
-                // Log all results of the SELECT statement
-                renderTable(res);
-                whatProcess();
-            });
-        })
 };
 
 const viewAllRoles = () => {
@@ -212,7 +241,74 @@ const viewAllDepartments = () => {
     });
 };
 
+const viewAllEmployeesByManager = async () => {
+    let managerList = await getManagers();
 
+    inquirer
+        .prompt({
+            name: 'employees_by_manager',
+            type: 'list',
+            message: "Which manager's employees would you like to view?",
+            choices: managerList.map((manager) => {
+                return manager.first_name;
+            })
+        })
+        .then((answer) => {
+            let managerChoice = answer.employees_by_manager;
+            console.log(managerChoice);
+
+
+            let managerId;
+
+            for (let i = 0; i < managerList.length; i++) {
+                if (managerList[i].first_name === answer.employees_by_manager) {
+                    managerId = managerList[i].id;
+                };
+            };
+
+            selectedManager = managerList.find((manager) => manager.first_name === answer.employees_by_manager);
+
+
+            const query = `SELECT b.id, b.first_name, b.last_name, role.title, department.department_name ,role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee b LEFT JOIN employee m ON m.id = b.manager_id LEFT JOIN role ON role.id = b.role_id LEFT JOIN department ON department.id = role.department_id WHERE b.manager_id = ?`;
+
+            connection.query(query,[selectedManager.id] ,(err, res) => {
+                if (err) throw err;
+                // Log all results of the SELECT statement
+                renderTable(res);
+                whatProcess();
+            });
+        })
+};
+
+
+const viewAllEmployeesByDept = async () => {
+    let departmentList = await getDepartments();
+    
+    inquirer
+        .prompt({
+            name: 'employees_by_department',
+            type: 'list',
+            message: "Which department's employees would you like to view?",
+            choices: departmentList.map((department) => {
+                return department.department_name;
+            })
+        })
+        .then((answer) => {
+            let deptChoice = answer.employees_by_department;
+            console.log(deptChoice);
+            const query = `SELECT b.id, b.first_name, b.last_name, role.title, department.department_name ,role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee b LEFT JOIN employee m ON m.id = b.manager_id LEFT JOIN role ON role.id = b.role_id LEFT JOIN department ON department.id = role.department_id WHERE (department.department_name = ?)`;
+
+            connection.query(query,[deptChoice] ,(err, res) => {
+                if (err) throw err;
+                // Log all results of the SELECT statement
+                renderTable(res);
+                whatProcess();
+            });
+        });
+};
+
+
+// --------------- ADD TO DATABASE ---------------------
 
 const addEmployee = async () => {
     let managerList = await getManagers();
@@ -286,6 +382,7 @@ const addEmployee = async () => {
         );
     });
 };
+
 
 const addRole = async () => {
     let departmentList = await getDepartments();
@@ -364,6 +461,16 @@ const addDepartment = () => {
 };
 
 // HELPER FUNCTIONS
+const getEmployees = () => {
+    const query = `SELECT b.id, CONCAT(b.first_name, ' ',  b.last_name) employee_name, role.title, b.manager_id, CONCAT(m.first_name, ' ', m.last_name) manager  FROM employee b LEFT JOIN role ON role.id = b.role_id LEFT JOIN employee m ON m.id = b.manager_id;`;
+    return new Promise ((resolve,reject) => {
+        connection.query(query, (err, res) => {
+            if (err) throw (err);
+            resolve(res);
+        });
+    });
+};
+
 const getManagers = () => {
     const query = `SELECT b.id, b.first_name, b.last_name, b.manager_id, role.title FROM employee b LEFT JOIN role ON role.id = b.role_id WHERE b.manager_id is null;`;
     return new Promise ((resolve,reject) => {
@@ -393,31 +500,3 @@ const getDepartments = () => {
         });
     });
 };
-
-// const viewAllEmployeesByManager = () => {
-//     // getManagers();
-//     inquirer
-//         .prompt({
-//             name: 'employees_by_manager',
-//             type: 'list',
-//             message: "Which manager's employees would you like to view?",
-//             choices: [
-//                 'Ashley Rodriguez',
-//                 'John Doe',
-//                 'Sarah Lourd',
-//                 'Exit'
-//             ],
-//         })
-//         .then((answer) => {
-//             let managerChoice = answer.employees_by_manager;
-//             console.log(managerChoice);
-//             const query = `SELECT b.id, b.first_name, b.last_name, role.title, department.department_name ,role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee b LEFT JOIN employee m ON m.id = b.manager_id LEFT JOIN role ON role.id = b.role_id LEFT JOIN department ON department.id = role.department_id WHERE (CONCAT(b.first_name, ' ', b.last_name) = ?)`;
-
-//             connection.query(query,[managerChoice] ,(err, res) => {
-//                 if (err) throw err;
-//                 // Log all results of the SELECT statement
-//                 renderTable(res);
-//                 whatProcess();
-//             });
-//         })
-// };
