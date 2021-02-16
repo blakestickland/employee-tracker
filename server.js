@@ -49,7 +49,7 @@ const whatProcess = () => {
                 "Add Department",
                 "Remove Employee",
                 "Remove Role",
-                // "Remove Department",
+                "Remove Department",
                 "Update Employee Role",
                 // "Update Employee Manager",
                 'Exit'
@@ -555,6 +555,53 @@ const removeRole = async () => {
     });
 };
 
+const removeDepartment = async () => {
+    let departmentList = await getDepartments();
+    inquirer
+    .prompt([
+        {
+            name: 'chosen_department',
+            type: 'list',
+            message: "Which department would you like to remove?",
+            choices: departmentList.map((department) => {
+                return department.department_name;
+            })
+        },
+    ])
+    .then ((answer) => {
+
+        let departmentId;
+
+        for (let i = 0; i < departmentList.length; i++) {
+            if (departmentList[i].department_name === answer.chosen_department) {
+                departmentId = departmentList[i].id;
+            };
+        };
+        
+        selectedDepartment = departmentList.find((department) => department.department_name === answer.chosen_department);
+
+        // Diasable ALL foreign keys to be able to delete a role.
+        connection.query(`SET FOREIGN_KEY_CHECKS=0;`, (err, res) => {
+            if (err) throw err;
+            console.log("have temporarily disabled all the foreign keys");
+        });
+        
+        const query =  `DELETE FROM employees.department WHERE id = ? ;`;
+        connection.query(query, [departmentId], (err, res) => {
+            if (err) throw err;
+            // Inform user that the employee's role has been updated
+            console.log(`Removed ${answer.chosen_department} from the department table in the database.\n NOTE: you may have to reassign departments to roles that had the department: ${answer.chosen_department}.`)
+            whatProcess();
+        }
+        );
+
+        // Re-enabled ALL foreign keys to be able to prevent from deleting a role.
+        connection.query(`SET FOREIGN_KEY_CHECKS=0;`, (err, res) => {
+            if (err) throw err;
+            console.log("have re-enabled all the foreign keys");
+        });
+    });
+};
 
 // HELPER FUNCTIONS
 const getEmployees = () => {
