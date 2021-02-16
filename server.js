@@ -48,6 +48,8 @@ const whatProcess = () => {
                 "Add Role",
                 "Add Department",
                 "Remove Employee",
+                "Remove Role",
+                // "Remove Department",
                 "Update Employee Role",
                 // "Update Employee Manager",
                 'Exit'
@@ -502,6 +504,54 @@ const removeEmployee = async () => {
             whatProcess();
             }
         );
+    });
+};
+
+const removeRole = async () => {
+    let roleList = await getRoles();
+    inquirer
+    .prompt([
+        {
+            name: 'chosen_role',
+            type: 'list',
+            message: "Which role would you like to remove?",
+            choices: roleList.map((role) => {
+                return role.title;
+            })
+        },
+    ])
+    .then ((answer) => {
+
+        let roleId;
+
+        for (let i = 0; i < roleList.length; i++) {
+            if (roleList[i].title === answer.chosen_role) {
+                roleId = roleList[i].id;
+            };
+        };
+        
+        selectedRole = roleList.find((role) => role.title === answer.chosen_role);
+
+        // Diasable ALL foreign keys to be able to delete a role.
+        connection.query(`SET FOREIGN_KEY_CHECKS=0;`, (err, res) => {
+            if (err) throw err;
+            console.log("have temporarily disabled all the foreign keys");
+        });
+        
+        const query =  `DELETE FROM employees.role WHERE id = ? ;`;
+        connection.query(query, [roleId], (err, res) => {
+            if (err) throw err;
+            // Inform user that the employee's role has been updated
+            console.log(`Removed ${answer.chosen_role} from the role table in the database.\n NOTE: you may have to reassign roles to employees who had the role ${answer.chosen_role}.`)
+            whatProcess();
+        }
+        );
+
+        // Re-enabled ALL foreign keys to be able to prevent from deleting a role.
+        connection.query(`SET FOREIGN_KEY_CHECKS=0;`, (err, res) => {
+            if (err) throw err;
+            console.log("have re-enabled all the foreign keys");
+        });
     });
 };
 
