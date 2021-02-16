@@ -19,7 +19,7 @@
     
   ## Screenshot
 
-  ![Screenshot of the Employee Tracker app](assets/screen_shot_employee_tracker.png)
+  ![Screenshot of the Employee Tracker app](./assets/screen_shot_employee_tracker.png)
 
   ## Installation
   1. Fork the readme-generator repository to your local drive.
@@ -52,7 +52,7 @@
 
 
   ## Walk-through Video
-  [![Employee Tracker Walk-through Video](assets/walkthrough-video/employee-tracker-video-Screen-Shot.png)](assets/walkthrough-video/employee-tracker-walkthrough.mp4)
+  [![Employee Tracker Walk-through Video](./assets/walkthrough-video/employee-tracker-video-Screen-Shot.png)](./assets/walkthrough-video/employee-tracker-walkthrough.mp4)
 
   
 
