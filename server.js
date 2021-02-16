@@ -51,7 +51,7 @@ const whatProcess = () => {
                 "Remove Role",
                 "Remove Department",
                 "Update Employee Role",
-                // "Update Employee Manager",
+                "Update Employee Manager",
                 'Exit'
             ],
         })
@@ -139,6 +139,71 @@ const whatProcess = () => {
 };
 
 // ----------------- UPDATE DATABASE ----------------------
+const updateEmployeeManager = async () => {
+    let employeeList = await getEmployees();
+    let managerList = await getManagers();
+    inquirer
+    .prompt([
+        {
+            name: 'chosen_employee',
+            type: 'list',
+            message: "Which employee's manager would you like to update?",
+            choices: employeeList.map((employee) => {
+                return employee.employee_name;
+            })
+        },
+        {
+            name: 'updated_manager',
+            type: 'list',
+            message: "Which manager would you like to assign?",
+            choices: managerList.map((manager) => {
+                return manager.first_name;
+            }),
+        },
+
+    // ])
+    // {
+    //     name: 'manager',
+    //     type: 'list',
+    //     message: "Who is the employee's manager?",
+    //     choices: managerList.map((manager) => {
+    //         return manager.first_name;
+    //     }),
+    // }
+    ]).then((answer) => {
+
+        let employeeId;
+
+        for (let i = 0; i < employeeList.length; i++) {
+            if (employeeList[i].employee_name === answer.chosen_employee) {
+                employeeId = employeeList[i].id;
+            };
+        };
+
+        let managerId;
+
+        for (let i = 0; i < managerList.length; i++) {
+            if (managerList[i].first_name === answer.updated_manager) {
+                managerId = managerList[i].id;
+            };
+        };
+
+        const query = connection.query(`UPDATE employee SET ? WHERE ?`,
+        [
+            {
+                manager_id: managerId,
+            },
+            {
+                id: employeeId,
+            }
+        ],(err, res) => {
+                if (err) throw err;
+                console.log(`Updated ${answer.chosen_employee}'s manager to be ${answer.updated_manager} in the database`)
+                whatProcess();
+            }
+        );
+    });
+}
 
 const updateEmployeeRole = async () => {
     // ask which employee?
@@ -547,8 +612,8 @@ const removeRole = async () => {
         }
         );
 
-        // Re-enabled ALL foreign keys to be able to prevent from deleting a role.
-        connection.query(`SET FOREIGN_KEY_CHECKS=0;`, (err, res) => {
+        // Re-enable ALL foreign keys to be able to prevent from deleting a role.
+        connection.query(`SET FOREIGN_KEY_CHECKS=1;`, (err, res) => {
             if (err) throw err;
             console.log("have re-enabled all the foreign keys");
         });
@@ -595,8 +660,8 @@ const removeDepartment = async () => {
         }
         );
 
-        // Re-enabled ALL foreign keys to be able to prevent from deleting a role.
-        connection.query(`SET FOREIGN_KEY_CHECKS=0;`, (err, res) => {
+        // Re-enable ALL foreign keys to prevent from deleting a role.
+        connection.query(`SET FOREIGN_KEY_CHECKS=1;`, (err, res) => {
             if (err) throw err;
             console.log("have re-enabled all the foreign keys");
         });
