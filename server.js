@@ -1,6 +1,10 @@
+// Dependencies (run: npm install [dependency] in root folder)
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const chalk = require('chalk');
+const figlet = require('figlet');
 
+// Define the connection to MySQL database
 const connection = mysql.createConnection({
   host: 'localhost',
 
@@ -11,17 +15,31 @@ const connection = mysql.createConnection({
   user: 'root',
 
   // Be sure to update with your own MySQL password!
+  // NOTE: database name is: employees
   password: 'password2',
   database: 'employees',
 });
 
-connection.connect((err) => {
-  if (err) throw err;
-  console.log("Made a connection");
-  whatProcess();
+
+// Database Connect and Starter Title
+connection.connect((error) => {
+    if (error) throw error;
+    console.log(chalk.yellow.bold(`====================================================================================`));
+    console.log(``);
+    console.log(chalk.greenBright.bold(figlet.textSync('Employee Tracker')));
+    console.log(``);
+    console.log(`                                          ` + chalk.greenBright.bold('Title Splash Created By: Joseph DeWoody'));
+    console.log(``);
+    console.log(chalk.yellow.bold(`====================================================================================`));
+    console.log("Made a connection");
+
+// Show the list of processes available
+    whatProcess();
+
 });
 
-function renderTable(sqlResponse){
+// Function to render table of returned SQL data.
+const renderTable = (sqlResponse) => {
     const newArr= []
     sqlResponse.forEach(row=>{
       newArr.push(Object.assign({}, row))
@@ -29,6 +47,7 @@ function renderTable(sqlResponse){
     console.table(newArr)
   };
 
+// Function to display main menu 
 const whatProcess = () => {
     inquirer
     .prompt(
@@ -43,7 +62,7 @@ const whatProcess = () => {
                 'View All Employees By Manager',
                 "View All Roles",
                 "View All Departments",
-                // 'View Combined Salaries by Department',
+                'View Combined Salaries by Department',
                 "Add Employee",
                 "Add Role",
                 "Add Department",
@@ -136,143 +155,6 @@ const whatProcess = () => {
                 break;
         }
     });  
-};
-
-// ----------------- UPDATE DATABASE ----------------------
-const updateEmployeeManager = async () => {
-    let employeeList = await getEmployees();
-    let managerList = await getManagers();
-    inquirer
-    .prompt([
-        {
-            name: 'chosen_employee',
-            type: 'list',
-            message: "Which employee's manager would you like to update?",
-            choices: employeeList.map((employee) => {
-                return employee.employee_name;
-            })
-        },
-        {
-            name: 'updated_manager',
-            type: 'list',
-            message: "Which manager would you like to assign?",
-            choices: managerList.map((manager) => {
-                return manager.first_name;
-            }),
-        },
-
-    // ])
-    // {
-    //     name: 'manager',
-    //     type: 'list',
-    //     message: "Who is the employee's manager?",
-    //     choices: managerList.map((manager) => {
-    //         return manager.first_name;
-    //     }),
-    // }
-    ]).then((answer) => {
-
-        let employeeId;
-
-        for (let i = 0; i < employeeList.length; i++) {
-            if (employeeList[i].employee_name === answer.chosen_employee) {
-                employeeId = employeeList[i].id;
-            };
-        };
-
-        let managerId;
-
-        for (let i = 0; i < managerList.length; i++) {
-            if (managerList[i].first_name === answer.updated_manager) {
-                managerId = managerList[i].id;
-            };
-        };
-
-        const query = connection.query(`UPDATE employee SET ? WHERE ?`,
-        [
-            {
-                manager_id: managerId,
-            },
-            {
-                id: employeeId,
-            }
-        ],(err, res) => {
-                if (err) throw err;
-                console.log(`Updated ${answer.chosen_employee}'s manager to be ${answer.updated_manager} in the database`)
-                whatProcess();
-            }
-        );
-    });
-}
-
-const updateEmployeeRole = async () => {
-    // ask which employee?
-    // ask what to update to?
-    // pass the parameters into update employee role
-    // replace the ? with the parameters passed in
-    // KEEP IN MIND THE JOINS
-    let employeeList = await getEmployees();
-    let roleList = await getRoles();
-    inquirer
-    .prompt([
-        {
-            name: 'chosen_employee',
-            type: 'list',
-            message: "Which employee's role would you like to update?",
-            choices: employeeList.map((employee) => {
-                return employee.employee_name;
-            })
-        },
-        {
-            name: 'updated_role',
-            type: 'list',
-            message: "What is the employee's new role?",
-            choices: roleList.map((role) => {
-                return role.title;
-            }),
-        },
-    ])
-    .then ((answer) => {
-
-        let employeeId;
-
-        for (let i = 0; i < employeeList.length; i++) {
-            if (employeeList[i].employee_name === answer.chosen_employee) {
-                employeeId = employeeList[i].id;
-            };
-        };
-        
-        selectedEmployee = employeeList.find((employee) => employee.employee_name === answer.chosen_employee);
-        
-        let roleId;
-
-        for (let i = 0; i < roleList.length; i++) {
-            if (roleList[i].title === answer.updated_role) {
-                roleId = roleList[i].id;
-            };
-        };
-
-        selectedRole = roleList.find((role) => role.title === answer.updated_role);
-
-
-        const query = connection.query(
-            `UPDATE employee SET ? WHERE ?`,
-            [
-                {
-                    role_id: roleId,
-                },
-                {
-                    id: employeeId,
-                }
-            ],
-            (err, res) => {
-            if (err) throw err;
-            // Inform user that the employee's role has been updated
-            console.log(`Updated ${answer.chosen_employee}'s role to be ${answer.updated_role} in the employee table in the database`)
-            whatProcess();
-            }
-        );
-    });
 };
 
 
@@ -376,6 +258,44 @@ const viewAllEmployeesByDept = async () => {
         });
 };
 
+const viewCombinedSalaries = async () => {
+    let employeeList = await getEmployees();
+    let departmentList = await getDepartments();
+    inquirer
+    .prompt([
+        {
+            name: 'chosen_department',
+            type: 'list',
+            message: "Which department's combined salaries would you like to see?",
+            choices: departmentList.map((department) => {
+                return department.department_name;
+            })
+        },
+    ]).then((answer) => {
+        let deptChoice = answer.chosen_department;
+        let departmentId;
+
+        for (let i = 0; i < departmentList.length; i++) {
+            if (departmentList[i].department_name === deptChoice) {
+                departmentId = departmentList[i].id;
+            };
+        };
+        
+        const query = `SELECT b.id, b.first_name, b.last_name, role.title, department.department_name ,role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee b LEFT JOIN employee m ON m.id = b.manager_id LEFT JOIN role ON role.id = b.role_id LEFT JOIN department ON department.id = role.department_id WHERE (department.department_name = ?)`;
+
+        connection.query(query,[deptChoice] ,(err, res) => {
+            if (err) throw err;
+            // Log all results of the SELECT statement
+            renderTable(res);
+            let combinedDeptSalary = 0;
+            res.forEach(element => {
+                combinedDeptSalary += element.salary;
+            });
+            console.log(`\nThe combined department salary for the ${deptChoice} department is $${combinedDeptSalary}!\n`)
+            whatProcess();
+        });
+    });
+};
 
 // --------------- ADD TO DATABASE ---------------------
 
@@ -383,35 +303,35 @@ const addEmployee = async () => {
     let managerList = await getManagers();
     managerList.push({first_name: 'None'});
     let roleList = await getRoles();
-    console.log(managerList);
+
     inquirer
     .prompt([
-    {
-        name: 'first_name',
-        type: 'input',
-        message: "What is the employee's first name?",
-    },
-    {
-        name: 'last_name',
-        type: 'input',
-        message: "What is the employee's last name?",
-    },
-    {
-        name: 'role',
-        type: 'list',
-        message: "What is the employee's role?",
-        choices: roleList.map((role) => {
-            return role.title;
-        }),
-    },
-    {
-        name: 'manager',
-        type: 'list',
-        message: "Who is the employee's manager?",
-        choices: managerList.map((manager) => {
-            return manager.first_name;
-        }),
-    }
+        {
+            name: 'first_name',
+            type: 'input',
+            message: "What is the employee's first name?",
+        },
+        {
+            name: 'last_name',
+            type: 'input',
+            message: "What is the employee's last name?",
+        },
+        {
+            name: 'role',
+            type: 'list',
+            message: "What is the employee's role?",
+            choices: roleList.map((role) => {
+                return role.title;
+            }),
+        },
+        {
+            name: 'manager',
+            type: 'list',
+            message: "Who is the employee's manager?",
+            choices: managerList.map((manager) => {
+                return manager.first_name;
+            }),
+        }
     ]).then((answer) => {
 
         let roleId;
@@ -668,7 +588,131 @@ const removeDepartment = async () => {
     });
 };
 
-// HELPER FUNCTIONS
+
+// ----------------- UPDATE DATABASE ----------------------
+const updateEmployeeManager = async () => {
+    let employeeList = await getEmployees();
+    let managerList = await getManagers();
+    inquirer
+    .prompt([
+        {
+            name: 'chosen_employee',
+            type: 'list',
+            message: "Which employee's manager would you like to update?",
+            choices: employeeList.map((employee) => {
+                return employee.employee_name;
+            })
+        },
+        {
+            name: 'updated_manager',
+            type: 'list',
+            message: "Which manager would you like to assign?",
+            choices: managerList.map((manager) => {
+                return manager.first_name;
+            }),
+        },
+    ]).then((answer) => {
+
+        let employeeId;
+
+        for (let i = 0; i < employeeList.length; i++) {
+            if (employeeList[i].employee_name === answer.chosen_employee) {
+                employeeId = employeeList[i].id;
+            };
+        };
+
+        let managerId;
+
+        for (let i = 0; i < managerList.length; i++) {
+            if (managerList[i].first_name === answer.updated_manager) {
+                managerId = managerList[i].id;
+            };
+        };
+
+        const query = connection.query(`UPDATE employee SET ? WHERE ?`,
+        [
+            {
+                manager_id: managerId,
+            },
+            {
+                id: employeeId,
+            }
+        ],(err, res) => {
+                if (err) throw err;
+                console.log(`Updated ${answer.chosen_employee}'s manager to be ${answer.updated_manager} in the database`)
+                whatProcess();
+            }
+        );
+    });
+}
+
+const updateEmployeeRole = async () => {
+    let employeeList = await getEmployees();
+    let roleList = await getRoles();
+    inquirer
+    .prompt([
+        {
+            name: 'chosen_employee',
+            type: 'list',
+            message: "Which employee's role would you like to update?",
+            choices: employeeList.map((employee) => {
+                return employee.employee_name;
+            })
+        },
+        {
+            name: 'updated_role',
+            type: 'list',
+            message: "What is the employee's new role?",
+            choices: roleList.map((role) => {
+                return role.title;
+            }),
+        },
+    ])
+    .then ((answer) => {
+
+        let employeeId;
+
+        for (let i = 0; i < employeeList.length; i++) {
+            if (employeeList[i].employee_name === answer.chosen_employee) {
+                employeeId = employeeList[i].id;
+            };
+        };
+        
+        selectedEmployee = employeeList.find((employee) => employee.employee_name === answer.chosen_employee);
+        
+        let roleId;
+
+        for (let i = 0; i < roleList.length; i++) {
+            if (roleList[i].title === answer.updated_role) {
+                roleId = roleList[i].id;
+            };
+        };
+
+        selectedRole = roleList.find((role) => role.title === answer.updated_role);
+
+
+        const query = connection.query(
+            `UPDATE employee SET ? WHERE ?`,
+            [
+                {
+                    role_id: roleId,
+                },
+                {
+                    id: employeeId,
+                }
+            ],
+            (err, res) => {
+            if (err) throw err;
+            // Inform user that the employee's role has been updated
+            console.log(`Updated ${answer.chosen_employee}'s role to be ${answer.updated_role} in the employee table in the database`)
+            whatProcess();
+            }
+        );
+    });
+};
+
+
+// ------------- HELPER FUNCTIONS ------------------------
 const getEmployees = () => {
     const query = `SELECT b.id, CONCAT(b.first_name, ' ',  b.last_name) employee_name, role.title, b.manager_id, CONCAT(m.first_name, ' ', m.last_name) manager  FROM employee b LEFT JOIN role ON role.id = b.role_id LEFT JOIN employee m ON m.id = b.manager_id;`;
     return new Promise ((resolve,reject) => {
