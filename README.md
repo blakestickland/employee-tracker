@@ -19,7 +19,7 @@
     
   ## Screenshot
 
-  ![Screenshot of the Employee Tracker app](./assets/screen_shot_employee_tracker.png)
+  ![Screenshot of the Employee Tracker app](https://user-images.githubusercontent.com/73763708/108137794-b7ae4900-7110-11eb-866a-07a520251e68.png)
 
   ## Installation
   1. Fork the readme-generator repository to your local drive.
@@ -52,7 +52,7 @@
 
 
   ## Walk-through Video
-  [![Employee Tracker Walk-through Video](./assets/walkthrough-video/employee-tracker-video-Screen-Shot.png)](./assets/walkthrough-video/employee-tracker-walkthrough.mp4)
+  [![Employee Tracker Walk-through Video](https://user-images.githubusercontent.com/73763708/108137794-b7ae4900-7110-11eb-866a-07a520251e68.png)](./assets/walkthrough-video/employee-tracker-walkthrough.mp4)
 
   
 
@@ -60,8 +60,11 @@
   [MIT License](https://choosealicense.com/licenses/)
   
   ## Contributing
-  Email queries to me, Blake Stickland
-  
+ If you would like to contribute, please fork the app, develop, and submit ideas via pull requests. Direct contact any suggestions too via GitHub or email.
+
+  Title Splash Created By: Joseph DeWoody. 
+  Github username: [jpd61](https://github.com/jpd61)
+
   ## Tests
   Run the following command from the root of your project:
   ```bash

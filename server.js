@@ -28,7 +28,7 @@ connection.connect((error) => {
     console.log(``);
     console.log(chalk.greenBright.bold(figlet.textSync('Employee Tracker')));
     console.log(``);
-    console.log(`                                          ` + chalk.greenBright.bold('Title Splash Created By: Joseph DeWoody'));
+    console.log(`                                          ` + chalk.greenBright.bold('Created By: Blake Stickland'));
     console.log(``);
     console.log(chalk.yellow.bold(`====================================================================================`));
     console.log("Made a connection");
