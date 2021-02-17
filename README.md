@@ -19,7 +19,7 @@
     
   ## Screenshot
 
-  ![Screenshot of the Employee Tracker app](./assets/screen_shot_employee_tracker.png)
+  ![Screenshot of the Employee Tracker app](https://user-images.githubusercontent.com/73763708/108137794-b7ae4900-7110-11eb-866a-07a520251e68.png)
 
   ## Installation
   1. Fork the readme-generator repository to your local drive.
