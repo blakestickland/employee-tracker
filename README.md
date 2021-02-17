@@ -52,7 +52,7 @@
 
 
   ## Walk-through Video
-  [![Employee Tracker Walk-through Video](https://user-images.githubusercontent.com/73763708/108139507-4d97a300-7114-11eb-9b49-3cdf060d465e.png)](./assets/walkthrough-video/employee-tracker-walkthrough.mp4)
+  [![Employee Tracker Walk-through Video](https://user-images.githubusercontent.com/73763708/108139507-4d97a300-7114-11eb-9b49-3cdf060d465e.png)](./Assets/walkthrough-video/employee-tracker-walkthrough.mp4)
 
   
 
